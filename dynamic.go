@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
 )
@@ -993,4 +994,12 @@ func (c *Client) GetUserSpaceDynamic(param GetUserSpaceDynamicParam) (*DynamicIn
 		url    = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space"
 	)
 	return execute[*DynamicInfo](c, method, url, param)
+}
+
+func (c *Client) RawGetUserSpaceDynamic(param GetUserSpaceDynamicParam) (*simplejson.Json, error) {
+	const (
+		method = resty.MethodGet
+		url    = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space"
+	)
+	return ExecuteRaw(c, method, url, param)
 }
