@@ -2,9 +2,10 @@ package bilibili
 
 import (
 	"encoding/json"
+	"io"
+
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
-	"io"
 )
 
 type SearchDynamicAtParam struct {
@@ -732,6 +733,17 @@ type DynamicItem struct {
 					Title string `json:"title"`
 					Type  int    `json:"type"`
 				} `json:"archive,omitempty"`
+				Opus struct {
+					Summary struct {
+						RichTextNodes []struct {
+							OrigText string `json:"orig_text,omitempty"`
+							Text     string `json:"text,omitempty"`
+							Type     string `json:"type,omitempty"`
+						} `json:"rich_text_nodes,omitempty"`
+						Text string `json:"text,omitempty"`
+					} `json:"summary,omitempty"`
+					Title string `json:"title,omitempty"`
+				} `json:"opus,omitempty"`
 			} `json:"major"`
 			Topic any `json:"topic"`
 		} `json:"module_dynamic"`
