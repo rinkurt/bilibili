@@ -9,6 +9,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
 	"github.com/spf13/cast"
@@ -76,6 +77,36 @@ func execute[Out any](c *Client, method, url string, in any, handlers ...paramHa
 		return out, errors.WithStack(Error{Code: cr.Code, Message: cr.Message})
 	}
 	return cr.Data, errors.WithStack(err)
+}
+
+// execute 发起请求
+func ExecuteRaw(c *Client, method, url string, in any, handlers ...paramHandler) (out *simplejson.Json, err error) {
+	r := c.resty.R()
+	if err = withParams(r, in); err != nil {
+		return
+	}
+	for _, handler := range handlers {
+		if err = handler(r); err != nil {
+			return
+		}
+	}
+	resp, err := r.Execute(method, url)
+	if err != nil {
+		return out, errors.WithStack(err)
+	}
+	if resp.StatusCode() != 200 {
+		return out, errors.Errorf("status code: %d", resp.StatusCode())
+	}
+	c.SetCookies(resp.Cookies())
+	body, err := simplejson.NewJson(resp.Body())
+	if err != nil {
+		return out, errors.WithStack(err)
+	}
+	code := body.Get("code").MustInt()
+	if code != 0 {
+		return out, errors.WithStack(Error{Code: code, Message: body.Get("message").MustString()})
+	}
+	return body.Get("data"), nil
 }
 
 type commonResp[T any] struct {
