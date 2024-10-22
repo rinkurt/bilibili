@@ -1,48 +1,20 @@
-<div align="center">
+# Bilibili API for Go (Dynamic Version)
 
-# 哔哩哔哩-API-Go版本
-
-![](https://img.shields.io/github/go-mod/go-version/CuteReimu/bilibili "语言")
-[![](https://img.shields.io/github/stars/CuteReimu/bilibili?style=flat&color=yellow)](#star-history "stars")
-[![](https://img.shields.io/github/actions/workflow/status/CuteReimu/bilibili/golangci-lint.yml?branch=master)](https://github.com/CuteReimu/bilibili/actions/workflows/golangci-lint.yml "代码分析")
-[![](https://img.shields.io/github/contributors/CuteReimu/bilibili)](https://github.com/CuteReimu/bilibili/graphs/contributors "贡献者")
-[![](https://img.shields.io/github/license/CuteReimu/bilibili)](https://github.com/CuteReimu/bilibili/blob/master/LICENSE "许可协议")
-</div>
-
-本项目是基于Go语言编写的哔哩哔哩API调用。目前常用的接口已经基本完成。
-
-**本项目不会编写单元测试代码**。一则因为各项数据会频繁变动，难以写成固定的结果；二则因为每次单元测试都要大量请求B站API，会对其产生不必要的压力。
-如果你发现有**接口bug**或者**有你需要但是本库尚未实现的接口**，可以[提交issue](https://github.com/CuteReimu/bilibili/issues/new/choose)或者[提交pull request](.github/CONTRIBUTING.md)。
-如果因为B站修改了接口导致接口突然不可用，不一定能够及时更新，很大程度上需要依赖各位的告知。
-
-> [!IMPORTANT]
-> 现在是v2版本，v2版本需要Go1.19及以上。[如果还想使用v1版本可以点击这里跳转](https://github.com/CuteReimu/bilibili/tree/v1)。
-
-**如果你觉得本项目对你有帮助，点亮右上角的↗ :star: 不迷路**
-
-## 声明
-
-1. 本项目遵守 AGPL 开源协议。
-2. 本项目基于 [SocialSisterYi/bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-   中描述的接口编写。请尊重该项目作者的努力，遵循该项目的开源要求，禁止一切商业使用。
-3. **请勿滥用，本项目仅用于学习和测试！利用本项目提供的接口、文档等造成不良影响及后果与本人无关。**
-4. 由于本项目的特殊性，可能随时停止开发或删档
-5. 本项目为开源项目，不接受任何形式的催单和索取行为，更不容许存在付费内容
-
-PS：目前，B站调用接口时强制使用 `https` 协议
+- 接口文档：[SocialSisterYi/bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
+- 基于 [CuteReimu/bilibili](https://github.com/CuteReimu/bilibili) 二次开发，保留登录与鉴权操作，删除其他接口。使用时可根据接口文档自行构建请求，响应将以 simplejson 格式返回，可根据文档进行解析。
 
 ## 快速开始
 
 ### 安装
 
 ```bash
-go get -u github.com/CuteReimu/bilibili/v2
+go get -u github.com/rinkurt/bilibili
 ```
 
 在项目中引用即可使用
 
 ```go
-import "github.com/CuteReimu/bilibili/v2"
+import "github.com/rinkurt/bilibili"
 
 var client = bilibili.New()
 ```
@@ -160,17 +132,21 @@ client.SetRawCookies("cookie1=xxx; cookie2=xxx")
 
 ### 其它接口
 
-你可以很方便的调用其它接口，以下举个例子：
+根据接口参数类型，调用 `client.Send(...)Request` 接口
 
 ```go
-videoInfo, err := client.GetVideoInfo(bilibili.VideoParam{
-    Aid: 12345678,
+resp, err := client.SendUrlRequest("GET", "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space", map[string]string{
+    "host_mid": "2",
+    "features": "itemOpusStyle",
 })
 ```
 
-参数中非必填字段你可以不填（可以通过是否有`omitempty`来判断这个字段是否为非必填字段）。
+返回 resp 为 simplejson 格式，可以调用 Get 或 GetPath 按照格式路径获取节点，然后调用相应的类型转换函数获取数据。具体参见 simplejson 文档。
 
-方法都是按照对应功能的英文翻译命名的，因此你可以方便地使用IDE找到想要的方法，配合注释便能够知道如何使用。
+```go
+resp.Get("key").MustString()
+resp.GetPath("key1", "key2").MustInt()
+```
 
 ### 对B站返回的错误码进行处理
 
@@ -236,19 +212,3 @@ regionDailyCount, err := client.GetRegionDailyCount()
 client.Resty().SetTimeout(20 * time.Second) // 设置超时时间
 client.Resty().SetLogger(logger) // 自定义logger
 ```
-
-## Star History
-
-<a href="https://star-history.com/#CuteReimu/bilibili&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=CuteReimu/bilibili&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=CuteReimu/bilibili&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=CuteReimu/bilibili&type=Date" />
- </picture>
-</a>
-
-## 如何为仓库做贡献？
-
-不知道在哪些方面可以做贡献？[点击这里看看吧！](https://github.com/CuteReimu/bilibili/contribute)
-
-命名规范和编码风格请参考[CONTRIBUTING.md](.github/CONTRIBUTING.md)
